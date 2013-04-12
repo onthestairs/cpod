@@ -5,6 +5,7 @@ class Screen(object):
     def __init__(self, stdscr):
         self.stdscr = stdscr
         curses.curs_set(0)
+        curses.use_default_colors()
         self.init_windows()
 
     def get_char(self):
@@ -38,7 +39,7 @@ class Screen(object):
             else:
                 style = curses.A_NORMAL
             self.body.addstr(line_number, 0 , line[0], style)
-        self.body.refresh()
+        self.refresh_body()
 
 
     def clear_status(self):
@@ -46,3 +47,7 @@ class Screen(object):
 
     def refresh_body(self):
         self.body.refresh()
+
+    def refresh(self):
+        self.stdscr.refresh()
+

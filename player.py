@@ -2,6 +2,7 @@ import subprocess
 import threading
 import os
 import logging
+import curses
 
 logger = logging.getLogger(__name__)
 
@@ -105,16 +106,18 @@ class MpPlayer(Player):
         if playList:
             opts = [self.PLAYER_CMD, "-quiet", "-playlist", streamUrl]
         else:
-            opts = [self.PLAYER_CMD, "-quiet", streamUrl]
+            opts = [self.PLAYER_CMD, "-quiet", "-slave", streamUrl]
         return opts
 
     def mute(self):
         """ mute mplayer """
-        self._sendCommand("m")
+        #self._sendCommand("m")
+        self._sendCommand("mute\n")
 
     def pause(self):
         """ pause streaming (if possible) """
-        self._sendCommand("p")
+        #self._sendCommand("p")
+        self._sendCommand("pause\n")
 
     def _stop(self):
         """ exit pyradio (and kill mplayer instance) """
@@ -127,6 +130,14 @@ class MpPlayer(Player):
     def volumeDown(self):
         """ decrease mplayer's volume """
         self._sendCommand("/")
+
+    def seekForward(self):
+        """ increase mplayer's volume """
+        self._sendCommand("seek 10\n")
+
+    def seekBackward(self):
+        """ decrease mplayer's volume """
+        self._sendCommand("seek -10\n")
 
 
 class VlcPlayer(Player):

@@ -8,6 +8,9 @@ class Cpod(object):
     def __init__(self, feeds):
         self.feeds = feeds
         self.player = player.probePlayer()()
+        self.name_index = 0
+        self.playing = False
+        self.mode = 'feeds'
 
     def run(self, stdscr):
         self.stdscr = stdscr
@@ -16,25 +19,30 @@ class Cpod(object):
 
         self.screen.put_status('Loading...')
 
-        self.name_index = 0
+        for feed in self.feeds:
+            feed.populate()
 
         self.screen.clear_status()
 
-        self.mode = 'feeds'
-
         self.draw_feeds()
+
+        #self.screen.refresh()
 
         while True:
             character = self.screen.get_char()
-            self.process_char(character)
-    
+            if self.process_char(character) == -1:
+                break
+
     @property
     def feed_names(self):
         return [feed.name for feed in self.feeds]
 
     def draw_feeds(self):
         lines = []
-        for index, name in enumerate(self.feed_names):
+        names = self.feed_names
+        if self.name_index-1 > self.screen.bodyMaxY:
+            names = names[self.name_index+1-self.screen.bodyMaxY:self.name_index+1]
+        for index, name in enumerate(names):
             name = name.encode('utf-8')
             if index == self.name_index:
                 lines.append((name, 'selected'))
@@ -45,9 +53,16 @@ class Cpod(object):
     def draw_items(self):
         feed = self.feeds[self.name_index]
         lines = []
-        for index, item in enumerate(feed.items):
+        items = feed.items
+        offset = 0
+        if self.item_index+1 > self.screen.bodyMaxY:
+            offset = self.item_index+1 - self.screen.bodyMaxY
+            items = items[self.item_index+1-self.screen.bodyMaxY:self.item_index+1]
+        for index, item in enumerate(items):
             title = item.title.encode('utf-8')
-            if index == self.item_index:
+            if item.duration:
+                title = title + ' [{0}]'.format(item.duration)
+            if index+offset == self.item_index:
                 lines.append((title, 'selected'))
             else:
                 lines.append((title, 'normal'))
@@ -63,11 +78,30 @@ class Cpod(object):
         self.item_index = index % number_of_items
 
     def play(self):
-        url = self.feeds[self.name_index].items[self.item_index].link
-        feed_name = self.feeds[self.name_index].name
-        item_name = self.feeds[self.name_index].items[self.item_index].title
-        self.screen.put_status('NOW PLAYING: {0} - {1}'.format(feed_name, item_name))
+        self.playing_item = self.feeds[self.name_index].items[self.item_index]
+        url = self.playing_item.play_url
+        self.now_playing_status()
+        self.playing = True
         self.player.play(url)
+
+    def toggle_pause(self):
+        self.player.pause()
+        self.playing = not self.playing
+
+        if self.playing:
+            self.now_playing_status()
+        else:
+            self.paused_status()       
+
+    def now_playing_status(self):
+        self.screen.put_status('NOW PLAYING: {0}'.format(self.playing_string))
+
+    def paused_status(self):
+        self.screen.put_status('PAUSED: {0}'.format(self.playing_string))
+
+    @property
+    def playing_string(self):
+        return '{0} - {1}'.format(self.playing_item.feed.name, self.playing_item.title)
 
     def process_char(self, character):
 
@@ -99,4 +133,21 @@ class Cpod(object):
             self.mode = 'feeds'
             self.draw_feeds()
 
+        if character == ord('p'):
+            self.toggle_pause()
+
+        if character == ord('-'):
+            self.player.volumeUp()
+
+        if character == ord('+'):
+            self.player.volumeDown()
+
+        if character == ord('o'):
+            self.player.seekForward()
+
+        if character == ord('i'):
+            self.player.seekBackward()
+
+        if character == ord('q'):
+            return -1
         

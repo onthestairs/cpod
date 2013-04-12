@@ -10,7 +10,7 @@ class Feed(object):
     def populate(self):
         d = feedparser.parse(self.url)
         self._name = d.feed.title
-        self._items = d.entries
+        self._items = [Item(entry, self) for entry in d.entries]
 
     @property
     def items(self):
@@ -26,3 +26,24 @@ class Feed(object):
         if not self._name:
             self.populate()
         return self._name
+
+    @property
+    def display_name(self):
+        return self.name
+
+
+class Item(object):
+
+    def __init__(self, item, feed):
+        self.item = item
+        self.title = item.title
+        self.link = item.link
+        self.feed = feed
+
+    @property 
+    def play_url(self):
+        return self.link
+
+    @property
+    def duration(self):
+        return self.item.get('itunes_duration', None)
