@@ -1,3 +1,6 @@
+import time
+import datetime
+
 import feedparser
 
 class Feed(object):
@@ -47,3 +50,9 @@ class Item(object):
     @property
     def duration(self):
         return self.item.get('itunes_duration', None)
+
+    @property
+    def date(self):
+        t = time.mktime(self.item.published_parsed)
+        dt = datetime.datetime.fromtimestamp(t)
+        return dt.strftime('%d %b %Y')

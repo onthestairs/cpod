@@ -6,10 +6,25 @@ class Screen(object):
         self.stdscr = stdscr
         curses.curs_set(0)
         curses.use_default_colors()
-        self.init_windows()
+
+        curses.init_pair(1, curses.COLOR_MAGENTA, -1)       
+        curses.init_pair(2, curses.COLOR_GREEN, -1)
+        curses.init_pair(3, curses.COLOR_WHITE, -1)
+        curses.init_pair(4, -1, -1)
+        curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_GREEN)
+
+        
+        self.magenta = curses.color_pair(1)     
+        self.green = curses.color_pair(2)
+        self.white = curses.color_pair(3)
+        self.default = curses.color_pair(4)
+        self.reverse = curses.A_REVERSE
+        self.magenta_bg = curses.color_pair(5)
+
+        self.init_windows()        
 
     def get_char(self):
-        return self.stdscr.getch()
+        return self.body.getch()
 
     def init_windows(self):
         self.maxY, self.maxX = self.stdscr.getmaxyx()
@@ -18,11 +33,13 @@ class Screen(object):
         self.body = curses.newwin(self.bodyMaxY, self.maxX, 1, 0)
         self.status = curses.newwin(1, self.maxX, self.maxY-1, 0)
 
-        self.put_header('cpod')
+        self.put_header('cpod v0.1')
 
     def put_header(self, string):
+        string = string + " "*(self.maxX-len(string)-1)
+
         self.header.erase()
-        self.header.addstr(0, 0, string, curses.A_REVERSE)
+        self.header.addstr(0, 0, string, self.magenta_bg)
         self.header.refresh()
 
     def put_status(self, string):
@@ -34,13 +51,12 @@ class Screen(object):
         lines = lines[:self.bodyMaxY]
         self.body.erase()
         for line_number, line in enumerate(lines):
-            if line[1] == 'selected':
-                style = curses.A_REVERSE
-            else:
-                style = curses.A_NORMAL
-            self.body.addstr(line_number, 0 , line[0], style)
+            cursor = 0
+            for part in line:
+                self.body.addstr(line_number, cursor , part[0], part[1])
+                cursor += len(part[0]) + 1
+            # self.body.addstr(line_number, 0 , line[0], style)
         self.refresh_body()
-
 
     def clear_status(self):
         self.put_status('')

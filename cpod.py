@@ -11,6 +11,7 @@ class Cpod(object):
         self.name_index = 0
         self.playing = False
         self.mode = 'feeds'
+        self.item_offset = 0
 
     def run(self, stdscr):
         self.stdscr = stdscr
@@ -29,8 +30,11 @@ class Cpod(object):
         #self.screen.refresh()
 
         while True:
-            character = self.screen.get_char()
-            if self.process_char(character) == -1:
+            try:
+                character = self.screen.get_char()
+                if self.process_char(character) == -1:
+                   break
+            except KeyboardInterrupt:
                 break
 
     @property
@@ -45,27 +49,40 @@ class Cpod(object):
         for index, name in enumerate(names):
             name = name.encode('utf-8')
             if index == self.name_index:
-                lines.append((name, 'selected'))
+                parts = [(name, self.screen.reverse)]
+                lines.append(parts)
             else:
-                lines.append((name, 'normal'))
+                parts = [(name, self.screen.default)]
+                lines.append(parts)
         self.screen.put_body_lines(lines)
 
     def draw_items(self):
         feed = self.feeds[self.name_index]
-        lines = []
         items = feed.items
-        offset = 0
-        if self.item_index+1 > self.screen.bodyMaxY:
-            offset = self.item_index+1 - self.screen.bodyMaxY
-            items = items[self.item_index+1-self.screen.bodyMaxY:self.item_index+1]
+
+        if self.item_index > self.item_offset + self.screen.bodyMaxY - 1:
+            self.item_offset = self.item_index - self.screen.bodyMaxY + 1
+        if self.item_index < self.item_offset:
+            self.item_offset = self.item_index
+
+        items = items[self.item_offset:self.item_offset+self.screen.bodyMaxY]
+
+        lines = []
         for index, item in enumerate(items):
+            parts = [(item.title.encode('utf-8'), self.screen.default),
+                     (item.duration, self.screen.magenta)]
             title = item.title.encode('utf-8')
-            if item.duration:
-                title = title + ' [{0}]'.format(item.duration)
-            if index+offset == self.item_index:
-                lines.append((title, 'selected'))
+            if index+self.item_offset == self.item_index:
+                parts = [(item.title.encode('utf-8'), self.screen.reverse),
+                         (item.date, self.screen.green),
+                         (item.duration, self.screen.magenta)]
+                lines.append(parts)
             else:
-                lines.append((title, 'normal'))
+                parts = [(item.title.encode('utf-8'), self.screen.default),
+                         (item.date, self.screen.green),
+                         (item.duration, self.screen.magenta)]
+                lines.append(parts)
+
         self.screen.put_body_lines(lines)
 
     def select_feed(self, index):
