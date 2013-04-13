@@ -125,11 +125,11 @@ class MpPlayer(Player):
 
     def volumeUp(self):
         """ increase mplayer's volume """
-        self._sendCommand("*")
+        self._sendCommand("volume 10\n")
 
     def volumeDown(self):
         """ decrease mplayer's volume """
-        self._sendCommand("/")
+        self._sendCommand("volume -10\n")
 
     def seekForward(self):
         """ increase mplayer's volume """

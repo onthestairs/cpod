@@ -18,7 +18,9 @@ class Cpod(object):
 
         self.screen = screen.Screen(self.stdscr)
 
+        self.screen.put_header('cpod v0.1')
         self.screen.put_status('Loading...')
+
 
         for feed in self.feeds:
             feed.populate()
@@ -111,7 +113,7 @@ class Cpod(object):
             self.paused_status()       
 
     def now_playing_status(self):
-        self.screen.put_status('NOW PLAYING: {0}'.format(self.playing_string))
+        self.screen.put_status('PLAYING: {0}'.format(self.playing_string))
 
     def paused_status(self):
         self.screen.put_status('PAUSED: {0}'.format(self.playing_string))
@@ -153,10 +155,10 @@ class Cpod(object):
         if character == ord('p'):
             self.toggle_pause()
 
-        if character == ord('-'):
+        if character == ord('='):
             self.player.volumeUp()
 
-        if character == ord('+'):
+        if character == ord('-'):
             self.player.volumeDown()
 
         if character == ord('o'):
@@ -167,4 +169,9 @@ class Cpod(object):
 
         if character == ord('q'):
             return -1
+
+        if character == curses.KEY_RESIZE:
+            self.screen.init_windows()
+            self.screen.put_header('cpod v0.1')
+            self.draw_items()
         

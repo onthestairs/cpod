@@ -40,12 +40,14 @@ class Item(object):
     def __init__(self, item, feed):
         self.item = item
         self.title = item.title
-        self.link = item.link
         self.feed = feed
 
     @property 
     def play_url(self):
-        return self.link
+        if 'mp3' in self.item.guid and self.item.guidislink:
+            return self.item.guid
+        else:
+            return self.item.link
 
     @property
     def duration(self):

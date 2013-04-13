@@ -33,18 +33,16 @@ class Screen(object):
         self.body = curses.newwin(self.bodyMaxY, self.maxX, 1, 0)
         self.status = curses.newwin(1, self.maxX, self.maxY-1, 0)
 
-        self.put_header('cpod v0.1')
-
     def put_header(self, string):
         string = string + " "*(self.maxX-len(string)-1)
 
         self.header.erase()
-        self.header.addstr(0, 0, string, self.magenta_bg)
+        self.header.addstr(0, 0, string[:self.maxX-2], self.magenta_bg)
         self.header.refresh()
 
     def put_status(self, string):
         self.status.erase()
-        self.status.addstr(0, 0, string, curses.A_REVERSE)
+        self.status.addstr(0, 0, string[:self.maxX-2], curses.A_REVERSE)
         self.status.refresh()
 
     def put_body_lines(self, lines):
@@ -53,8 +51,11 @@ class Screen(object):
         for line_number, line in enumerate(lines):
             cursor = 0
             for part in line:
-                self.body.addstr(line_number, cursor , part[0], part[1])
-                cursor += len(part[0]) + 1
+                string = part[0][:max(0, self.maxX-cursor-2)]
+                self.body.addstr(line_number, cursor , string, part[1])
+                cursor += len(string)
+                if string:
+                    cursor += 1
             # self.body.addstr(line_number, 0 , line[0], style)
         self.refresh_body()
 
