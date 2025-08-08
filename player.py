@@ -30,7 +30,7 @@ class Player(object):
                 # if (logger.isEnabledFor(logging.DEBUG)):
                 #     logger.debug("User input: {}".format(subsystemOut))
                 self.outputStream.write(subsystemOut)
-        except:
+        except Exception:
             pass
             # logger.error("Error in updateStatus thread.",
             #              exc_info=True)
@@ -62,8 +62,8 @@ class Player(object):
             try:
                 # if logger.isEnabledFor(logging.DEBUG):
                 #     logger.debug("Command: {}".format(command).strip())
-                self.process.stdin.write(command.encode("utf-8"))
-            except:
+                self.process.stdin.write(command)
+            except Exception:
                 msg = "Error when sending: {}"
                 # logger.error(msg.format(command).strip(),
                 #              exc_info=True)
@@ -184,7 +184,7 @@ def probePlayer():
     system."""
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug("Probing available multimedia players...")
-    implementedPlayers = Player.__subclasses__()
+    implementedPlayers = [MpvPlayer, MpPlayer, VlcPlayer]
     if logger.isEnabledFor(logging.INFO):
         logger.info("Implemented players: " +
                     ", ".join([player.PLAYER_CMD
@@ -203,3 +203,42 @@ def probePlayer():
         except OSError:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug("{} not supported.".format(str(player)))
+
+
+class MpvPlayer(Player):
+    """Implementation of Player object for Mpv"""
+
+    PLAYER_CMD = "mpv"
+
+    def _buildStartOpts(self, streamUrl, playList=False):
+        """ Builds the options to pass to subprocess."""
+        opts = [self.PLAYER_CMD, "--quiet", streamUrl]
+        return opts
+
+    def mute(self):
+        """ mute mplayer """
+        self._sendCommand("mute\n")
+
+    def pause(self):
+        """ pause streaming (if possible) """
+        self._sendCommand("pause\n")
+
+    def _stop(self):
+        """ exit pyradio (and kill mplayer instance) """
+        self._sendCommand("quit\n")
+
+    def volumeUp(self):
+        """ increase mplayer's volume """
+        self._sendCommand("volume 10\n")
+
+    def volumeDown(self):
+        """ decrease mplayer's volume """
+        self._sendCommand("volume -10\n")
+
+    def seekForward(self):
+        """ increase mplayer's volume """
+        self._sendCommand("seek 10\n")
+
+    def seekBackward(self):
+        """ decrease mplayer's volume """
+        self._sendCommand("seek -10\n")

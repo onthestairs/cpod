@@ -12,7 +12,7 @@ class Feed(object):
 
     def populate(self):
         d = feedparser.parse(self.url)
-        self._name = d.feed.title
+        self._name = getattr(d.feed, 'title', self.url)
         self._items = [Item(entry, self) for entry in d.entries]
 
     @property
