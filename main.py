@@ -13,4 +13,6 @@ urls = ['http://www.guardian.co.uk/football/series/footballweekly/podcast.xml',
 feeds = [Feed(url) for url in urls]
 
 cpod = cpod.Cpod(feeds)
+import time
+time.sleep(1)
 curses.wrapper(cpod.run)

@@ -49,7 +49,6 @@ class Cpod(object):
         if self.name_index-1 > self.screen.bodyMaxY:
             names = names[self.name_index+1-self.screen.bodyMaxY:self.name_index+1]
         for index, name in enumerate(names):
-            name = name.encode('utf-8')
             if index == self.name_index:
                 parts = [(name, self.screen.reverse)]
                 lines.append(parts)
@@ -71,16 +70,16 @@ class Cpod(object):
 
         lines = []
         for index, item in enumerate(items):
-            parts = [(item.title.encode('utf-8'), self.screen.default),
+            parts = [(item.title, self.screen.default),
                      (item.duration, self.screen.magenta)]
-            title = item.title.encode('utf-8')
+            title = item.title
             if index+self.item_offset == self.item_index:
-                parts = [(item.title.encode('utf-8'), self.screen.reverse),
+                parts = [(item.title, self.screen.reverse),
                          (item.date, self.screen.green),
                          (item.duration, self.screen.magenta)]
                 lines.append(parts)
             else:
-                parts = [(item.title.encode('utf-8'), self.screen.default),
+                parts = [(item.title, self.screen.default),
                          (item.date, self.screen.green),
                          (item.duration, self.screen.magenta)]
                 lines.append(parts)
